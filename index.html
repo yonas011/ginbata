@@ -275,6 +275,16 @@ document.addEventListener('click', e => {
 $('scrim').addEventListener('click', e => { if (e.target === $('scrim')) close(); });
 $('s-close').addEventListener('click', close);
 $('scrim').addEventListener('keydown', e => { if (e.key === 'Escape') close(); });
+/* Telegram blocks tel: links in mini apps, so there the bot sends a contact card to the chat instead. */
+$('s-call').addEventListener('click', e => {
+  const tg = window.Telegram && window.Telegram.WebApp;
+  if (!tg || !tg.initData) return;
+  e.preventDefault();
+  $('t-call').textContent = '…';
+  fetch('https://ginbata-bot.yonashabte023.workers.dev/call', { method: 'POST', body: tg.initData })
+    .then(r => { if (!r.ok) throw 0; tg.close(); })
+    .catch(() => { $('t-call').textContent = T[lang].call; try { navigator.clipboard.writeText(PHONE); } catch (x) {} $('t-copy').textContent = T[lang].copied; });
+});
 $('s-copy').addEventListener('click', () => {
   const done = () => { $('t-copy').textContent = T[lang].copied; };
   try { navigator.clipboard.writeText(PHONE).then(done, () => { selectPhone(); }); } catch (e) { selectPhone(); }
